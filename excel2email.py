@@ -7,12 +7,11 @@ emailmode = ""
 #ask for name of the excel file
 print("What is the name of the excel file that you are using (format: example.xlsx)?")
 name = input()
-#name = "test.xlsx"
 
-try:
+try: #Load workbook with given name (must be in same folder) and worksheet
     wb = openpyxl.load_workbook(name)
     ws = wb.active
-except:
+except: #errors out if wrong file format or name
         print("Could not load your excel workbook. Enter any key to exit.")
         start = input()
         sys.exit(130)
@@ -29,29 +28,54 @@ SSO = int(input())
 print("This program will append '@ge.com' to the SSO column and send an e-mail to that address.")
 emailappend = "@hotmail.com" #value to append is set here
 
+MaxRow = ws.max_row #calculates the max row
+MaxColumn = ws.max_column #calculates the max columns
+
 print("We have detected " + str(MaxRow) + " rows and " + str(MaxColumn) + " columns in total.")
 
 print("To start, type anything and hit enter")
 start = input()
-
-#Load workbook with given name (must be in same folder) and worksheet
-
-
-MaxRow = ws.max_row #calculates the max row
-MaxColumn = ws.max_column #calculates the max columns
-
+headercount = 0
+count = 0
 UserUsage = "" #Create an empty string to save the message body
 for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting at row 2
 
-    recipient = ws.cell(row=rows,column=SSO).value + emailappend #appends the e-mail address
+    if (str(ws.cell(row=rows,column=SSO).value) == "None"):
+        continue
 
-    for columns in range(1,MaxColumn+1,1): #iterates through every column
-        UserUsage+=(str(ws.cell(row=HeaderRow,column=columns).value) + ": " + str(ws.cell(row=rows,column=columns).value) + "\n")
+    recipient = str(ws.cell(row=rows,column=SSO).value) + emailappend #appends the e-mail address
+
+    for columns in range(1,MaxColumn+1,1):   #iterates through every column
+        if (str(ws.cell(row=rows,column=columns).value) == "None"):
+            headercount+=1
+            count+=1
+            continue
+        elif (str(ws.cell(row=(HeaderRow+1),column=columns).value) == "None" and str(ws.cell(row=(HeaderRow+2),column=columns).value) == "None" ):
+            UserUsage+=(str(ws.cell(row=HeaderRow,column=columns).value) + ": " + str(ws.cell(row=rows,column=columns).value) + "\n")
+        elif (str(ws.cell(row=(HeaderRow+1), column=columns).value) == "None" and str(ws.cell(row=(HeaderRow), column=columns).value) == "None"):
+            UserUsage += (str(ws.cell(row=HeaderRow, column=columns-headercount).value) + " " + str(
+                ws.cell(row=HeaderRow + 1, column=columns-count).value) + " " + str(
+                ws.cell(row=HeaderRow + 2, column=columns).value) + ": " + str(
+                ws.cell(row=rows, column=columns).value) + "\n")
+            count+=1
+            headercount+=1
+        elif (str(ws.cell(row=(HeaderRow), column=columns).value) == "None"):
+            UserUsage += (str(ws.cell(row=HeaderRow, column=columns - headercount).value) + " " + str(
+            ws.cell(row=HeaderRow + 1, column=columns).value) + " " + str(
+            ws.cell(row=HeaderRow + 2, column=columns).value) + ": " + str(
+            ws.cell(row=rows, column=columns).value) + "\n")
+            count = 1
+            headercount+=1
+        elif (str(ws.cell(row=(HeaderRow),column=columns).value) != str(ws.cell(row=(HeaderRow+1),column=columns).value)):
+            UserUsage += (str(ws.cell(row=HeaderRow, column=columns).value) + " " + str(ws.cell(row=HeaderRow+1, column=columns).value) + " " + str(ws.cell(row=HeaderRow+2, column=columns).value)+ ": " + str(ws.cell(row=rows, column=columns).value) + "\n")
+            count = 1
+            headercount = 1
 
     # print(recipient)
     #print (UserUsage)
     #print("")
-
+    if (UserUsage == ""):
+        continue
     outlook = win32.Dispatch("outlook.application")
     mail = outlook.CreateItem(0)
     mail.To = recipient
