@@ -149,8 +149,10 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
 
     #Verify with the user whether they truly want to send out the e-mails based on a printed sample
     if (rows == FirstRow):
-        print("The first e-mail will look like the following:\n" + str(UserUsageSend))
-        print("Are you sure you want to send (type 'yes' or this script will quit)? This message will not be repeated.")
+        print("\n" + str(UserUsageSend))
+        print("Shown above is a sample message. Are you sure you want to send?"
+              " (reply 'yes' or this script will quit)? This prompt message will not"
+              " be repeated for the rest of the messages.")
         emailmode = input()
         #Exit if user types anything but yes case-insensitive
         if (emailmode.upper() != "YES"):
