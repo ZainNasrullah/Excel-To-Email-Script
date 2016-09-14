@@ -16,13 +16,13 @@ except: #errors out if wrong file format or name
         start = input()
         sys.exit(130)
 
-print("Which row is the header information (Division, phone#, user, employee id, etc.) in?")
+print("Which row is the header information (Division, phone#, user, employee id, etc.) in? The default value is 4.")
 HeaderRow = int(input())
 
-print("What is the first row in which there is user data?")
+print("What is the first row in which there is user data? The default value is 7.")
 FirstRow = int(input())
 
-print("Which column(enter an integer value ex. A is 1, B is 2, etc.) is the SSO in?")
+print("Which column(enter an integer value ex. A is 1, B is 2, etc.) is the SSO in? The default value is 4.")
 SSO = int(input())
 
 print("This program will append '@ge.com' to the SSO column and send an e-mail to that address.")
@@ -66,7 +66,8 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
             ws.cell(row=rows, column=columns).value) + "\n")
             count = 1
             headercount+=1
-        elif (str(ws.cell(row=(HeaderRow),column=columns).value) != str(ws.cell(row=(HeaderRow+1),column=columns).value)):
+        #elif (str(ws.cell(row=(HeaderRow),column=columns).value) != str(ws.cell(row=(HeaderRow+1),column=columns).value)):
+        else:
             UserUsage += (str(ws.cell(row=HeaderRow, column=columns).value) + " " + str(ws.cell(row=HeaderRow+1, column=columns).value) + " " + str(ws.cell(row=HeaderRow+2, column=columns).value)+ ": " + str(ws.cell(row=rows, column=columns).value) + "\n")
             count = 1
             headercount = 1
