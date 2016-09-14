@@ -81,7 +81,7 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
 
         # NOTE: The code below is specifically designed for the Sydian template, a general case would not need any
         # subheaders or subsubheaders or workarounds for merging. Simply form the UserUsage string as follows:
-        # UserUsage+= ( headerstring + ": " + data + "\n")
+        # UserUsage+=(headerstring + ": " + data + "\n")
 
         #Special considerations because of subheaders and subsubheaders
         subheaderstring = str(ws.cell(row=SubHeaderRow,column=columns).value)
@@ -95,13 +95,13 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
 
         #case where there are no subheaders or subsubheaders
         elif (subheaderstring == "None" and subsubheaderstring == "None" ):
-            UserUsage+= ( headerstring + ": " + data + "\n")
+            UserUsage+=(headerstring + ": " + data + "\n")
 
         #case where both the header and subheader1 are merged but it's not the first entry
         elif (subheaderstring == "None" and headerstring == "None"):
             if subsubheaderstring == "None": #special case within this case
                 subsubheaderstring = ""
-            UserUsage += (str(ws.cell(row=HeaderRow, column=columns-headercount).value) + " " + str(
+            UserUsage+=(str(ws.cell(row=HeaderRow, column=columns-headercount).value) + " " + str(
                 ws.cell(row=SubHeaderRow, column=columns-count).value) + " " + subsubheaderstring+ ": " + data + "\n")
             count+=1
             headercount+=1
@@ -112,7 +112,7 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
                 subheaderstring = ""
             if subsubheaderstring == "None": #special cases within this case
                 subsubheaderstring = ""
-            UserUsage += (str(ws.cell(row=HeaderRow, column=columns - headercount).value) + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
+            UserUsage+=(str(ws.cell(row=HeaderRow, column=columns - headercount).value) + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
             count = 1
             headercount+=1
 
@@ -122,7 +122,7 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
                 subheaderstring = ""
             if subsubheaderstring == "None": #special cases within this case
                 subsubheaderstring = ""
-            UserUsage += (headerstring + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
+            UserUsage+=(headerstring + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
             count = 1
             headercount = 1
 
@@ -150,7 +150,7 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
     #Verify with the user whether they truly want to send out the e-mails based on a printed sample
     if (rows == FirstRow):
         print("The first e-mail will look like the following:\n" + str(UserUsageSend))
-        print("Are you sure you want to send (type 'yes' or this script will quit)? This message will not repeated.")
+        print("Are you sure you want to send (type 'yes' or this script will quit)? This message will not be repeated.")
         emailmode = input()
         #Exit if user types anything but yes case-insensitive
         if (emailmode.upper() != "YES"):
