@@ -19,31 +19,47 @@ import win32com.client as win32 #To work with outlook
 import sys #For system exit functionality
 
 #ask for name of the excel file
-print("What is the name of the excel file that you are using (format: example.xlsx)?")
-name = input()
+while True:
+    print("What is the name of the excel file that you are using (format: example.xlsx)?")
+    name = input()
 
-#Load workbook with given name (must be in same folder) and worksheet
-try:
-    wb = openpyxl.load_workbook(name)
-    ws = wb.active
-except: #errors out if wrong file format or name
-        print("Could not load your excel workbook. Enter any key to exit.")
-        start = input()
-        sys.exit(130)
+    #Load workbook with given name (must be in same folder) and worksheet
+    try:
+        wb = openpyxl.load_workbook(name)
+        ws = wb.active
+        break
+    except: #errors out if wrong file format or name
+            print("Could not load your excel workbook.")
+
 
 #Gather data about the Sydian spreadsheet (Note: SubHeaders may be removed for a generic function)
 print("Which row is the header information (Division, phone#, user, employee id, etc.) in? The default value is 4.")
-HeaderRow = int(input())
+
+try:
+    HeaderRow = int(input())
+except:
+    print("Blank or invalid entry, the program will proceed with using 4.\n")
+    HeaderRow = 4
+
 SubHeaderRow = HeaderRow+1 #subheadings
 SubSubHeaderRow = HeaderRow+2 #sub sub headings
 
 #Specify the first row of data to parse through
 print("What is the first row in which there is user data? The default value is 7.")
-FirstRow = int(input())
+
+try:
+    FirstRow = int(input())
+except:
+    print("Blank or invalid entry, the program will proceed with using 7.\n")
+    FirstRow = 7
 
 #Specificy which column contains the users unique identified to convert into an email address
 print("Which column(enter an integer value ex. A is 1, B is 2, etc.) is the SSO in? The default value is 4.")
-SSO = int(input())
+try:
+    SSO = int(input())
+except:
+    print("Blank or invalid entry, the program will proceed with using 4.\n")
+    SSO = 4
 
 #value to append is set here
 print("This program will append '@ge.com' to the SSO column and send an e-mail to that address.")
@@ -55,7 +71,7 @@ MaxColumn = ws.max_column
 print("We have detected " + str(MaxRow) + " rows and " + str(MaxColumn) + " columns in total.")
 
 #Starting Sequence
-print("To start, type anything and hit enter")
+print("Press enter to view a sample message.")
 start = input()
 
 #Definitions
@@ -89,40 +105,32 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
 
         # skip adding column data if the column entry is blank
         if (data == "None"):
-            headercount+=1 #tracks changes to merged headers/subheaders
-            count+=1
+            headercount += 1  # tracks changes to merged headers/subheaders
+            count += 1
             continue
 
-        #case where there are no subheaders or subsubheaders
-        elif (subheaderstring == "None" and subsubheaderstring == "None" ):
-            UserUsage+=(headerstring + ": " + data + "\n")
+            # case where there are no subheaders or subsubheaders
+        elif (subheaderstring == "None" and subsubheaderstring == "None"):
+            UserUsage += (headerstring + ": " + data + "\n")
 
-        #case where both the header and subheader1 are merged but it's not the first entry
+            # case where both the header and subheader1 are merged but it's not the first entry
         elif (subheaderstring == "None" and headerstring == "None"):
-            if subsubheaderstring == "None": #special case within this case
-                subsubheaderstring = ""
-            UserUsage+=(str(ws.cell(row=HeaderRow, column=columns-headercount).value) + " " + str(
-                ws.cell(row=SubHeaderRow, column=columns-count).value) + " " + subsubheaderstring+ ": " + data + "\n")
-            count+=1
-            headercount+=1
+            UserUsage += (str(ws.cell(row=HeaderRow, column=columns - headercount).value) + " " + str(
+                ws.cell(row=SubHeaderRow,
+                        column=columns - count).value) + " " + subsubheaderstring + ": " + data + "\n")
+            count += 1
+            headercount += 1
 
-        #case where the only header row is merged and it's not the first entry
+            # case where the only header row is merged and it's not the first entry
         elif (headerstring == "None"):
-            if (subheaderstring == "None"): #special cases within this case
-                subheaderstring = ""
-            if subsubheaderstring == "None": #special cases within this case
-                subsubheaderstring = ""
-            UserUsage+=(str(ws.cell(row=HeaderRow, column=columns - headercount).value) + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
+            UserUsage += (str(ws.cell(row=HeaderRow,
+                                      column=columns - headercount).value) + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
             count = 1
-            headercount+=1
+            headercount += 1
 
-        #general case where the all headerrow, subheader, and subsubheader are defined
+            # general case where the all headerrow, subheader, and subsubheader are defined
         else:
-            if subheaderstring == "None": #special cases within this case
-                subheaderstring = ""
-            if subsubheaderstring == "None": #special cases within this case
-                subsubheaderstring = ""
-            UserUsage+=(headerstring + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
+            UserUsage += (headerstring + " " + subheaderstring + " " + subsubheaderstring + ": " + data + "\n")
             count = 1
             headercount = 1
 
@@ -134,23 +142,29 @@ for rows in range (FirstRow, MaxRow+1,1): #iterate across all the rows starting 
     outlook = win32.Dispatch("outlook.application")
     mail = outlook.CreateItem(0)
     mail.To = recipient
-    mail.Subject = "Notification"
+    mail.Subject = "Wireless Overusage Notification"
 
     #clean up Sydian formatting
-    UserUsageSend = str(UserUsage).replace("  ", " ")
+    UserUsageSend = str(UserUsage).replace('None', '')
+    UserUsageSend = UserUsageSend.replace("  ", " ")
     UserUsageSend = UserUsageSend.replace(' :', ':')
+    UserUsageSend = UserUsageSend.replace('Data Total Charge', '\nData Total Charge')
+    UserUsageSend = UserUsageSend.replace('Taxes GST:', '\nTaxes GST:')
     UserUsageSend = UserUsageSend.replace('Charge: ', 'Charge: $')
     UserUsageSend = UserUsageSend.replace('Savings: ', 'Savings: $')
     UserUsageSend = UserUsageSend.replace('Total: ', 'Total: $')
     UserUsageSend = UserUsageSend.replace('ST: ', 'ST: $')
     UserUsageSend = uniquify(UserUsageSend)
 
-    mail.body = str(UserUsageSend)
+    UserFinal = 'Hello,\n\nYour  device is listed among some of the highest Wireless costs to GE. Please review the breakdown of your' \
+                ' billing below. \n \n'
+    UserFinal+=UserUsageSend
+    mail.body = str(UserFinal)
 
     #Verify with the user whether they truly want to send out the e-mails based on a printed sample
     if (rows == FirstRow):
-        print("\n" + str(UserUsageSend))
-        print("Shown above is a sample message. Are you sure you want to send?"
+        print("\n" + str(UserFinal))
+        print("Shown above is the sample message. Are you sure you want to send?"
               " (reply 'yes' or this script will quit)? This prompt message will not"
               " be repeated for the rest of the messages.")
         emailmode = input()
